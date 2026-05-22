@@ -3,14 +3,12 @@ FROM eclipse-temurin:21-jdk-alpine AS builder
 
 WORKDIR /app
 
-COPY .mvn .mvn
-COPY mvnw .
 COPY pom.xml .
 COPY src ./src
 
-RUN chmod +x mvnw
+RUN apk add --no-cache maven
 
-RUN ./mvnw clean package -DskipTests
+RUN mvn clean package -DskipTests
 
 # ---- Runtime Stage ----
 FROM eclipse-temurin:21-jre-alpine AS runtime
