@@ -1,14 +1,20 @@
 # ---- Build Stage ----
-FROM eclipse-temurin:17-jdk-alpine AS builder
+FROM eclipse-temurin:21-jdk-alpine AS builder
+
 WORKDIR /app
 
+COPY .mvn .mvn
+COPY mvnw .
 COPY pom.xml .
 COPY src ./src
 
-RUN apk add --no-cache maven && mvn clean package -DskipTests -q
+RUN chmod +x mvnw
+
+RUN ./mvnw clean package -DskipTests
 
 # ---- Runtime Stage ----
-FROM eclipse-temurin:17-jre-alpine AS runtime
+FROM eclipse-temurin:21-jre-alpine AS runtime
+
 WORKDIR /app
 
 RUN addgroup -S healthaxis && adduser -S healthaxis -G healthaxis
@@ -16,6 +22,7 @@ RUN addgroup -S healthaxis && adduser -S healthaxis -G healthaxis
 COPY --from=builder /app/target/*.jar app.jar
 
 RUN chown healthaxis:healthaxis app.jar
+
 USER healthaxis
 
 EXPOSE 8080
